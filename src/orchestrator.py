@@ -349,7 +349,7 @@ def remediate_issue(
             pr_url = _extract_pr_url(session_data)
             if pr_url:
                 last_known_pr = pr_url
-            acus = session_data.get("acus_consumed") or None
+            acus = session_data.get("acus_consumed")
 
             # Derive the display detail: if a PR exists and Devin is
             # just "working", surface a more informative "pr_ready" so

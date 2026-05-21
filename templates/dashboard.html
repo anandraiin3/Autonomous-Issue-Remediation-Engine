@@ -518,7 +518,7 @@
                         </td>
                         <!-- Numeric columns (Principle 7: Alignment — right-aligned, monospaced) -->
                         <td class="col-numeric">
-                            {% if s.acus_consumed %}
+                            {% if s.acus_consumed is not none %}
                                 {{ s.acus_consumed }}
                             {% else %}
                                 <span class="muted">&mdash;</span>
