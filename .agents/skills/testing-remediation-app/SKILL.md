@@ -1,4 +1,9 @@
-# Testing the Superset Issues Auto-Remediation App
+---
+name: testing-remediation-app
+description: How to run unit tests, integration tests, and dashboard UI tests for the Autonomous Issue Remediation Engine. Covers webhook payload testing, HMAC signing, DB seeding, and common pitfalls.
+---
+
+# Testing the Autonomous Issue Remediation Engine
 
 ## Overview
 This app receives GitHub webhook events for issues, detects the issue type, and creates Devin AI sessions to remediate them. Testing involves verifying webhook payload handling, type detection logic, and dashboard rendering.
@@ -11,10 +16,10 @@ This app receives GitHub webhook events for issues, detects the issue type, and 
 
 ## Running Unit Tests
 ```bash
-cd /home/ubuntu/repos/superset-issues-auto-remediation
+cd /home/ubuntu/repos/Autonomous-Issue-Remediation-Engine
 python -m pytest tests/ -v --tb=short
 ```
-All tests should pass (71+ tests as of v1.8).
+All tests should pass (76+ tests as of v1.9).
 
 ## Testing Webhook Handler (Integration)
 
@@ -85,6 +90,19 @@ Dashboard is at `http://localhost:5050/dashboard`.
 - Issue titles with `[Bug]`/`[Feature]`/`[Task]` prefixes display correctly
 - The `0` falsy bug was fixed — zero durations render as `0`, not `—`
 - `None` values render as `—`
+- "Overall (ms)" should always be ≥ "Devin (ms)"
+- Cost column shows `0.0` (not `—`) when ACU data is unavailable
+
+## Testing Issue Generator
+```bash
+cd tests/issue-generator
+# Build
+docker build -t issue-generator .
+# Run (creates random issues from issues.md)
+docker run --env-file ../../.env issue-generator --batch 3
+```
+- Uses `random.sample()` — each run picks different issues
+- Duplicate title detection prevents re-processing identical issues
 
 ## Common Pitfalls
 - `assertLogs` captures messages as `INFO:logger.name:message text`, not the `extra` dict keys. Check message text, not event_type.
@@ -92,3 +110,4 @@ Dashboard is at `http://localhost:5050/dashboard`.
 - The `APP_BASE_URL` env var is optional. When not set, webhook auto-registration is skipped (this is normal for local testing).
 - Personal GitHub repos do NOT have native issue types — `issue.type` is always `None`. The title prefix fallback handles this.
 - Gunicorn runs multiple workers by default; use `--preload` flag to avoid duplicate webhook registration.
+- The Devin API returns `acus_consumed: 0.0` on self-serve plans — this is expected, not a code bug.
